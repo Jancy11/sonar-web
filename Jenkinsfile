@@ -21,7 +21,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    sh 'npm install'
+                    bat 'npm install'
                 }
             }
         }
@@ -29,7 +29,7 @@ pipeline {
         stage('Run Lint') {
             steps {
                 script {
-                    sh 'npm run lint'
+                    bat 'npm run lint'
                 }
             }
         }
@@ -37,7 +37,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    sh 'npm run build'
+                    bat 'npm run build'
                 }
             }
         }
@@ -45,10 +45,12 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
+                    bat '''
                     sonar-scanner -Dsonar.projectKey=sonar-web ^
-                  -Dsonar.sources=. ^
-                  -Dsonar.host.url=http://localhost:9000 ^
-                  -Dsonar.token=%SONAR_TOKEN%
+                    -Dsonar.sources=. ^
+                    -Dsonar.host.url=http://localhost:9000 ^
+                    -Dsonar.token=%SONARQUBE_TOKEN%
+                    '''
                 }
             }
         }
