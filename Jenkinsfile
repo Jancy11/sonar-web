@@ -3,12 +3,10 @@ pipeline {
 
     tools {
         nodejs 'NodeJS_20.11' // Name of Node.js configured in Jenkins
-    
     }
 
     environment {
-
-                SONAR_TOKEN = credentials('Sonarqube-token') // Access the SonarQube token stored in Jenkins credentials
+        SONAR_TOKEN = credentials('Sonarqube-token') // Access the SonarQube token stored in Jenkins credentials
     }
 
     stages {
@@ -40,11 +38,11 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') { // Replace 'SonarQube' with your SonarQube instance name
                     sh '''
-                         set PATH=%SONAR_SCANNER_PATH%;%PATH%
+                        sonar-scanner \
                         -Dsonar.projectKey=sonar-web \
                         -Dsonar.sources=src \
                         -Dsonar.host.url=http://<sonarqube_server>:9000 \
-                        -Dsonar.token=%SONAR_TOKEN%
+                        -Dsonar.login=$SONAR_TOKEN
                     '''
                 }
             }
