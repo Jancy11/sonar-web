@@ -7,9 +7,8 @@ pipeline {
     }
 
     environment {
-        SONAR_SCANNER_HOME = 'C:\Users\ADMIN\Downloads\sonar-scanner-cli-6.2.1.4610-windows-x64\sonar-scanner-6.2.1.4610-windows-x64\bin'  // Set the path to your SonarQube scanner installation
-        PATH = "${SONAR_SCANNER_HOME}\\bin:${env.PATH}" // Add SonarQube scanner to the PATH
-        SONAR_TOKEN = credentials('Sonarqube-token')
+        SONAR_SCANNER_HOME = 'C:\\Users\\ADMIN\\Downloads\\sonar-scanner-cli-6.2.1.4610-windows-x64\\sonar-scanner-6.2.1.4610-windows-x64\\bin'  // Use double backslashes
+        PATH = "${SONAR_SCANNER_HOME}\\:${env.PATH}" // Add SonarQube scanner to the PATH
     }
 
     stages {
@@ -50,13 +49,12 @@ pipeline {
             steps {
                 script {
                     // Run SonarQube analysis using the sonar-scanner
-                    def sonarScannerPath = "${env.SONAR_SCANNER_HOME}\\bin\\sonar-scanner.bat"
+                    def sonarScannerPath = "${env.SONAR_SCANNER_HOME}\\sonar-scanner.bat"
                     if (fileExists(sonarScannerPath)) {
-                        bat """${sonarScannerPath} 
-                            -Dsonar.projectKey=sonar-web \
+                        bat """${sonarScannerPath} -Dsonar.projectKey=sonar-web \
                             -Dsonar.sources=. \
                             -Dsonar.host.url=http://localhost:9000 \
-                            -Dsonar.login=%SONAR_TOKEN%
+                            -Dsonar.token=Sonarqube-token"""
                     } else {
                         echo "SonarQube scanner not found at ${sonarScannerPath}. Please install it."
                         currentBuild.result = 'FAILURE'
