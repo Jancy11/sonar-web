@@ -1,11 +1,11 @@
 pipeline {
     agent any
     tools {
-        nodejs 'nodejs-20.11.0' // Name of the Node.js installation in Jenkins
+        nodejs 'nodejs-20.11.0' 
     }
 
     environment {
-        NODEJS_HOME = 'C:/Program Files/nodejs'  // Set the Node.js path
+        NODEJS_HOME = 'C:/Program Files/nodejs'  
         SONAR_SCANNER_PATH = 'C:/Users/ADMIN/Downloads/sonar-scanner-cli-6.2.1.4610-windows-x64/sonar-scanner-6.2.1.4610-windows-x64/bin'
     }
 
@@ -55,7 +55,7 @@ pipeline {
                 bat '''
                 set PATH=%SONAR_SCANNER_PATH%;%PATH%
                 where sonar-scanner || echo "SonarQube scanner not found. Please install it."
-                sonar-scanner -Dsonar.projectKey=sonar-web ^
+                sonar-scanner -Dsonar.projectKey=register-form ^
                     -Dsonar.sources=. ^
                     -Dsonar.host.url=http://localhost:9000 ^
                     -Dsonar.token=%SONAR_TOKEN% 2>&1
