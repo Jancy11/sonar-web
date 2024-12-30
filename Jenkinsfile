@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs 'nodejs-20.11.0' // Name of the Node.js installation in Jenkins
+    }
+
     environment {
         // Set the SonarQube server name and token
         SONARQUBE_SERVER = 'sonarqube' // SonarQube server name configured in Jenkins
@@ -41,11 +45,10 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    // Ensure SonarQube environment is loaded
-                    withSonarQubeEnv('sonarqube') {
-                        // Run SonarQube analysis using the sonar-scanner
-                        sh 'sonar-scanner -Dsonar.projectKey=your_project_key -Dsonar.sources=src'
-                    }
+                    sonar-scanner -Dsonar.projectKey=sonar-web ^
+                  -Dsonar.sources=. ^
+                  -Dsonar.host.url=http://localhost:9000 ^
+                  -Dsonar.token=%SONAR_TOKEN%
                 }
             }
         }
@@ -53,7 +56,6 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 script {
-                    // Wait for the SonarQube analysis to complete
                     timeout(time: 1, unit: 'HOURS') {
                         waitForQualityGate abortPipeline: true
                     }
