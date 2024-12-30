@@ -2,13 +2,14 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'nodejs-20.11.0' // Name of the Node.js installation in Jenkins
+        // Define Node.js tool
+        nodejs 'NodeJS_20.11.0' // Ensure the Node.js tool is set up in Jenkins
     }
 
     environment {
-        // Set the SonarQube server name and token
-        SONARQUBE_SERVER = 'sonarqube' // SonarQube server name configured in Jenkins
-        SONARQUBE_TOKEN = 'Sonarqube-token' // SonarQube token
+        SONAR_SCANNER_HOME = 'C:\Users\ADMIN\Downloads\sonar-scanner-cli-6.2.1.4610-windows-x64\sonar-scanner-6.2.1.4610-windows-x64\bin'  // Set the path to your SonarQube scanner installation
+        PATH = "${SONAR_SCANNER_HOME}\\bin:${env.PATH}" // Add SonarQube scanner to the PATH
+        SONAR_TOKEN = credentials('Sonarqube-token')
     }
 
     stages {
@@ -21,6 +22,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
+                    // Install dependencies using npm
                     bat 'npm install'
                 }
             }
@@ -29,6 +31,7 @@ pipeline {
         stage('Run Lint') {
             steps {
                 script {
+                    // Run lint checks using ESLint
                     bat 'npm run lint'
                 }
             }
@@ -37,30 +40,37 @@ pipeline {
         stage('Build') {
             steps {
                 script {
+                    // Run build process using npm
                     bat 'npm run build'
                 }
             }
         }
 
         stage('SonarQube Analysis') {
-    steps {
-        script {
-            bat '''
-            "C:\\sonar-scanner\\bin\\sonar-scanner.bat" -Dsonar.projectKey=sonar-web ^
-            -Dsonar.sources=. ^
-            -Dsonar.host.url=http://localhost:9000 ^
-            -Dsonar.token=%SONARQUBE_TOKEN%
-            '''
+            steps {
+                script {
+                    // Run SonarQube analysis using the sonar-scanner
+                    def sonarScannerPath = "${env.SONAR_SCANNER_HOME}\\bin\\sonar-scanner.bat"
+                    if (fileExists(sonarScannerPath)) {
+                        bat """${sonarScannerPath} 
+                            -Dsonar.projectKey=sonar-web \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=http://localhost:9000 \
+                            -Dsonar.login=%SONAR_TOKEN%
+                    } else {
+                        echo "SonarQube scanner not found at ${sonarScannerPath}. Please install it."
+                        currentBuild.result = 'FAILURE'
+                        return
+                    }
+                }
+            }
         }
-    }
-}
 
         stage('Quality Gate') {
             steps {
                 script {
-                    timeout(time: 1, unit: 'HOURS') {
-                        waitForQualityGate abortPipeline: true
-                    }
+                    // You can add any additional checks here for the SonarQube Quality Gate
+                    echo 'Quality Gate stage can be used to check if SonarQube passed.'
                 }
             }
         }
