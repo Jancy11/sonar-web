@@ -36,7 +36,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') { // Replace 'SonarQube' with your SonarQube instance name
+                withSonarQubeEnv('Sonarqube-token') { // Replace 'SonarQube' with your SonarQube instance name
                     sh '''
                         sonar-scanner \
                         -Dsonar.projectKey=sonar-web \
