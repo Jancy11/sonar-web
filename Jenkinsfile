@@ -1,16 +1,14 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs 'nodejs-20.11' // Name of Node.js configured in Jenkins
-    }
-
     environment {
-        SONAR_TOKEN = credentials('Sonarqube-token') // Access the SonarQube token stored in Jenkins credentials
+        // Set the SonarQube server name and token
+        SONARQUBE_SERVER = 'sonarqube' // SonarQube server name configured in Jenkins
+        SONARQUBE_TOKEN = 'Sonarqube-token' // SonarQube token
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Checkout SCM') {
             steps {
                 checkout scm
             }
@@ -18,40 +16,46 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                script {
+                    sh 'npm install'
+                }
             }
         }
 
         stage('Run Lint') {
             steps {
-                sh 'npm run lint || echo "Lint warnings present"'
+                script {
+                    sh 'npm run lint'
+                }
             }
         }
 
         stage('Build') {
             steps {
-                sh 'npm run build'
+                script {
+                    sh 'npm run build'
+                }
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('Sonarqube-token') { // Replace 'SonarQube' with your SonarQube instance name
-                    sh '''
-                        sonar-scanner \
-                        -Dsonar.projectKey=sonar-web \
-                        -Dsonar.sources=src \
-                        -Dsonar.host.url=http://<sonarqube_server>:9000 \
-                        -Dsonar.login=$SONAR_TOKEN
-                    '''
+                script {
+                    // Run SonarQube analysis with the correct server and token
+                    withSonarQubeEnv('sonarqube') {
+                        sh 'npm run sonar'
+                    }
                 }
             }
         }
 
         stage('Quality Gate') {
             steps {
-                timeout(time: 1, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                script {
+                    // Wait for the SonarQube analysis to complete
+                    timeout(time: 1, unit: 'HOURS') {
+                        waitForQualityGate abortPipeline: true
+                    }
                 }
             }
         }
