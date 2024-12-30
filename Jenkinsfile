@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'nodejs_20.11' // Name of Node.js configured in Jenkins
+        nodejs 'nodejs-20.11' // Name of Node.js configured in Jenkins
     }
 
     environment {
