@@ -1,18 +1,16 @@
 pipeline {
     agent any
-
     tools {
-        // Correct tool name based on Jenkins configuration
-        nodejs 'nodejs-20.11.0'
+        nodejs 'nodejs-20.11.0' // Name of the Node.js installation in Jenkins
     }
 
     environment {
-        SONAR_SCANNER_HOME = 'C:\\Users\\ADMIN\\Downloads\\sonar-scanner-cli-6.2.1.4610-windows-x64\\sonar-scanner-6.2.1.4610-windows-x64\\bin'
-        PATH = "${SONAR_SCANNER_HOME}\\:${env.PATH}"
+        NODEJS_HOME = 'C:/Program Files/nodejs'  // Set the Node.js path
+        SONAR_SCANNER_PATH = 'C:/Users/ADMIN/Downloads/sonar-scanner-cli-6.2.1.4610-windows-x64/sonar-scanner-6.2.1.4610-windows-x64/bin'
     }
 
     stages {
-        stage('Checkout SCM') {
+        stage('Checkout') {
             steps {
                 checkout scm
             }
@@ -20,61 +18,61 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                script {
-                    bat 'npm install'
-                }
+                // Set the PATH and install dependencies using npm
+                bat '''
+                set PATH=%NODEJS_HOME%;%PATH%
+                npm install
+                '''
             }
         }
 
-        stage('Run Lint') {
+        stage('Lint') {
             steps {
-                script {
-                    bat 'npm run lint'
-                }
+                // Run linting to ensure code quality
+                bat '''
+                set PATH=%NODEJS_HOME%;%PATH%
+                npm run lint
+                '''
             }
         }
 
         stage('Build') {
             steps {
-                script {
-                    bat 'npm run build'
-                }
+                // Build the React app
+                bat '''
+                set PATH=%NODEJS_HOME%;%PATH%
+                npm run build
+                '''
             }
         }
 
         stage('SonarQube Analysis') {
-            steps {
-                script {
-                    def sonarScannerPath = "${env.SONAR_SCANNER_HOME}\\sonar-scanner.bat"
-                    if (fileExists(sonarScannerPath)) {
-                        bat """${sonarScannerPath} -Dsonar.projectKey=sonar-web \
-                            -Dsonar.sources=. \
-                            -Dsonar.host.url=http://localhost:9000 \
-                            -Dsonar.token=Sonarqube-token"""
-                    } else {
-                        echo "SonarQube scanner not found at ${sonarScannerPath}. Please install it."
-                        currentBuild.result = 'FAILURE'
-                        return
-                    }
-                }
+            environment {
+                SONAR_TOKEN = credentials('Sonarqube-token') // Accessing the SonarQube token stored in Jenkins credentials
             }
-        }
-
-        stage('Quality Gate') {
             steps {
-                script {
-                    echo 'Quality Gate stage can be used to check if SonarQube passed.'
-                }
+                // Ensure that sonar-scanner is in the PATH
+                bat '''
+                set PATH=%SONAR_SCANNER_PATH%;%PATH%
+                where sonar-scanner || echo "SonarQube scanner not found. Please install it."
+                sonar-scanner -Dsonar.projectKey=sonar-web ^
+                    -Dsonar.sources=. ^
+                    -Dsonar.host.url=http://localhost:9000 ^
+                    -Dsonar.token=%SONAR_TOKEN% 2>&1
+                '''
             }
         }
     }
 
     post {
-        always {
-            echo 'Pipeline execution completed.'
+        success {
+            echo 'Pipeline completed successfully'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo 'Pipeline failed'
+        }
+        always {
+            echo 'This runs regardless of the result.'
         }
     }
 }
