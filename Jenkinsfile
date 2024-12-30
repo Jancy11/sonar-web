@@ -43,17 +43,17 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            steps {
-                script {
-                    bat '''
-                    sonar-scanner -Dsonar.projectKey=sonar-web ^
-                    -Dsonar.sources=. ^
-                    -Dsonar.host.url=http://localhost:9000 ^
-                    -Dsonar.token=%SONARQUBE_TOKEN%
-                    '''
-                }
-            }
+    steps {
+        script {
+            bat '''
+            "C:\\sonar-scanner\\bin\\sonar-scanner.bat" -Dsonar.projectKey=sonar-web ^
+            -Dsonar.sources=. ^
+            -Dsonar.host.url=http://localhost:9000 ^
+            -Dsonar.token=%SONARQUBE_TOKEN%
+            '''
         }
+    }
+}
 
         stage('Quality Gate') {
             steps {
