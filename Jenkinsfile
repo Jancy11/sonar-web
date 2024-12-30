@@ -41,9 +41,10 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    // Run SonarQube analysis with the correct server and token
+                    // Ensure SonarQube environment is loaded
                     withSonarQubeEnv('sonarqube') {
-                        sh 'npm run sonar'
+                        // Run SonarQube analysis using the sonar-scanner
+                        sh 'sonar-scanner -Dsonar.projectKey=your_project_key -Dsonar.sources=src'
                     }
                 }
             }
